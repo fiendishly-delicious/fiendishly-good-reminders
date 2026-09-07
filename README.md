@@ -4,7 +4,22 @@ Provides the reminder functionality that Home Assistant has long needed.  Remind
 
 > "Remind me to take the bins out every Sunday at 9 pm for the next 6 weeks."
 
-The integration provides six reminder actions, two reminder entities and a custom reminder dashboard card. Also included below is a suggested set of voice sentences that can be used to schedule, cancel, skip or list your reminders. The actions may equally be called programmatically.
+The integration provides six reminder actions, two reminder entities and a custom reminder
+dashboard card. Also included below is a suggested set of voice sentences that can be used to
+schedule, cancel, skip or list your reminders. The actions may equally be called
+programmatically.
+
+| Action | What it does |
+|---|---|
+| **`schedule`** | Creates a reminder — one-off or repeating, with an optional end after a number of weeks, a number of times, or a named date |
+| **`cancel`** | Removes a reminder outright. For a repeating one that is **every** occurrence, which is why it reads the match back and waits for a yes |
+| **`skip`** | Drops the next occurrence, or everything up to Saturday, and leaves the series running. Asks first only when the skip would exhaust the rule and delete the reminder |
+| **`list`** | The upcoming reminders, soonest first, over however many days you ask for |
+| **`find`** | Searches by text, by a named day, or by a period — one entry per reminder however often it repeats, with the occurrences that fall inside the range |
+| **`edit`** | Changes a reminder's wording, its time, or its recurrence. Moving a series re-anchors the whole pattern; changing the pattern leaves the hour alone |
+
+Every one of them **answers**: a `success` code and, when it is not `1`, an `error` saying
+exactly what went wrong. Nothing raises, so a script always gets to read what happened.
 
 Add single or recurring reminders — recurring daily, weekly, or monthly. Say "Remind me again in [time]" to reset the last reminder. Edit existing reminders. Pretty much anything you want. All local, no LLM interference.
 
