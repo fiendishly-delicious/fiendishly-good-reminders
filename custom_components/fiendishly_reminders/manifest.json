@@ -1,0 +1,17 @@
+{
+  "domain": "fiendishly_reminders",
+  "name": "Fiendishly Good Reminders",
+  "version": "0.2.0",
+  "config_flow": true,
+  "documentation": "https://github.com/fiendishly-delicious/fiendishly-good-reminders",
+  "issue_tracker": "https://github.com/fiendishly-delicious/fiendishly-good-reminders/issues",
+  "codeowners": [
+    "@fiendishly-delicious"
+  ],
+  "iot_class": "local_push",
+  "integration_type": "service",
+  "dependencies": [
+    "http"
+  ],
+  "requirements": []
+}

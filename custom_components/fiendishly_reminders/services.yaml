@@ -1,0 +1,157 @@
+schedule:
+  name: Schedule a reminder
+  description: >-
+    Create a reminder, optionally repeating. Always answers rather than raising:
+    success is 1, or 10 (unreadable time) / 11 (bad rule) / 12 (time already passed)
+    / 23 (no list by that name) / 24 (more than one list and none named) with an error
+    message.
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    text: {name: Text, required: true, selector: {text:}}
+    due: {name: Due, description: The first occurrence., required: true, selector: {datetime:}}
+    rrule:
+      name: Recurrence rule
+      description: >-
+        RFC5545, with or without the RRULE: prefix. FREQ must be DAILY, WEEKLY, MONTHLY
+        or YEARLY. e.g. FREQ=WEEKLY;BYDAY=TH
+      example: FREQ=WEEKLY;BYDAY=TH
+      selector: {text:}
+cancel:
+  name: Cancel reminders
+  description: >-
+    Cancel every reminder whose text matches, or one exact reminder by id. For a series
+    this removes all occurrences. Give one or the other. success is 1, or 20 (nothing
+    given to match on) / 21 (nothing matched) / 23 (no list by that name) / 24 (more
+    than one list and none named).
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    text: {name: Text contains, selector: {text:}}
+    id:
+      name: Reminder id
+      description: >-
+        Exactly one reminder, from the id in sensor.reminders_next_reminder's attributes
+        or from the schedule service's response. Use this to cancel by time: pick the
+        row you mean, then name it, rather than deleting over a window.
+      selector: {text:}
+skip:
+  name: Skip occurrences
+  description: >-
+    Drop occurrences of a repeating reminder without canceling the series. success is
+    1, or 20 (nothing given to match on) / 21 (nothing matched) / 23 (no list by that
+    name) / 24 (more than one list and none named) / 30 (it happens only once) / 31
+    (nothing left in the window).
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    text: {name: Text contains, selector: {text:}}
+    id:
+      name: Reminder id
+      description: One exact reminder, instead of a text match. Give one or the other.
+      selector: {text:}
+    scope:
+      name: Scope
+      description: next = the soonest occurrence; week = everything up to Saturday.
+      default: next
+      selector: {select: {options: [next, week]}}
+list:
+  name: List reminders
+  description: >-
+    Upcoming reminders, soonest first. success is 1, or 23 (no list by that name) / 24 (more
+    than one list and none named) / 40 (the window is empty).
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    days: {name: Days ahead, default: 7, selector: {number: {min: 1, max: 365, mode: box}}}
+
+find:
+  name: Find reminders
+  description: >-
+    Search by text, by date range, or both. One entry per reminder however often it
+    repeats, with the occurrences that fall inside the range. success is 1, or 10
+    (unreadable date) / 21 (nothing matched) / 23 (no list by that name) / 24 (more than
+    one list and none named) / 40 (there are no reminders at all).
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    text:
+      name: Text contains
+      description: Case-insensitive, and tolerant of the way speech arrives.
+      selector: {text:}
+    start_date_time:
+      name: From
+      description: Defaults to now when only an end is given.
+      selector: {datetime:}
+    end_date_time:
+      name: Until
+      description: Defaults to ten years out when only a start is given.
+      selector: {datetime:}
+
+edit:
+  name: Edit a reminder
+  description: >-
+    Change a reminder's text, time or recurrence. Answers with the same shape as
+    schedule. success is 1, or 10 (unreadable time) / 11 (bad rule) / 12 (time already
+    passed) / 21 (no reminder with that id) / 22 (nothing given to change) / 23 (no list
+    by that name) / 24 (more than one list and none named).
+  fields:
+    target:
+      name: List
+      description: >-
+        Whose list, by the name given to it in its configuration. REQUIRED once more than
+        one list is set up - there is no default, and a call that names none answers 24
+        rather than picking somebody. With a single list it can be left out.
+      example: Jen
+      selector: {text:}
+    id:
+      name: Reminder id
+      description: From a find, list or schedule response, or the sensor's attributes.
+      required: true
+      selector: {text:}
+    text:
+      name: New text
+      selector: {text:}
+    due:
+      name: New time
+      description: >-
+        For a repeating reminder this moves the whole series - the pattern re-anchors
+        here. To drop a single occurrence, use skip instead.
+      selector: {datetime:}
+    rrule:
+      name: New recurrence rule
+      description: >-
+        RFC5545, as for schedule. An EMPTY string removes the recurrence and leaves a
+        one-off. Changing the rule clears any previously skipped occurrences.
+      example: FREQ=WEEKLY;BYDAY=TH
+      selector: {text:}

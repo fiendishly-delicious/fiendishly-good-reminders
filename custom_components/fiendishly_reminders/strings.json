@@ -1,0 +1,127 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Fiendishly Good Reminders",
+        "description": "One list per person - run this again to add another. Give at least one way to deliver a reminder: target satellites, notification recipients, or both.",
+        "sections": {
+          "whose": {
+            "name": "Whose Reminders",
+            "data": {
+              "name": "Whose reminders are these? (e.g. John)"
+            }
+          },
+          "delivery": {
+            "name": "Send Reminders to:",
+            "data": {
+              "announce_targets": "Target Satellites",
+              "notify_service": "Notification Recipient(s)"
+            }
+          },
+          "quiet": {
+            "name": "Prevent Spoken Reminders If:",
+            "data": {
+              "presence_entity": "This person is not home",
+              "quiet_start": "Quiet Hours Start",
+              "quiet_end": "Quiet Hours End"
+            }
+          },
+          "chime": {
+            "name": "Chimes",
+            "data": {
+              "chime_on": "Play Chime Before Reminder",
+              "chime": "Chime"
+            }
+          },
+          "times": {
+            "name": "Default Times",
+            "data": {
+              "default_time": "Default Time",
+              "morning_time": "Default Morning Time",
+              "afternoon_time": "Default Afternoon Time",
+              "evening_time": "Default Evening Time"
+            }
+          },
+          "confirmations": {
+            "name": "Confirmations",
+            "data": {
+              "confirm_cancel": "Confirm before canceling"
+            },
+            "data_description": {
+              "confirm_cancel": "Turning this off also narrows matching. Reading a guess back is what makes a loose match safe, so with nothing read back to you only an exact match is acted on."
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "no_name": "Fill in \"Whose reminders are these?\" under Whose Reminders - the list needs a name.",
+      "no_delivery": "Pick at least one Target Satellite or Notification Recipient under \"Send Reminders to:\" - otherwise a reminder has nowhere to go.",
+      "no_name_or_delivery": "Two things are still needed: a name under Whose Reminders, and at least one Target Satellite or Notification Recipient under \"Send Reminders to:\"."
+    },
+    "abort": {
+      "already_configured": "Fiendishly Good Reminders is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fiendishly Good Reminders",
+        "description": "One list per person - run this again to add another. Give at least one way to deliver a reminder: target satellites, notification recipients, or both.",
+        "sections": {
+          "whose": {
+            "name": "Whose Reminders",
+            "data": {
+              "name": "Whose reminders are these? (e.g. John)"
+            }
+          },
+          "delivery": {
+            "name": "Send Reminders to:",
+            "data": {
+              "announce_targets": "Target Satellites",
+              "notify_service": "Notification Recipient(s)"
+            }
+          },
+          "quiet": {
+            "name": "Prevent Spoken Reminders If:",
+            "data": {
+              "presence_entity": "This person is not home",
+              "quiet_start": "Quiet Hours Start",
+              "quiet_end": "Quiet Hours End"
+            }
+          },
+          "chime": {
+            "name": "Chimes",
+            "data": {
+              "chime_on": "Play Chime Before Reminder",
+              "chime": "Chime"
+            }
+          },
+          "times": {
+            "name": "Default Times",
+            "data": {
+              "default_time": "Default Time",
+              "morning_time": "Default Morning Time",
+              "afternoon_time": "Default Afternoon Time",
+              "evening_time": "Default Evening Time"
+            }
+          },
+          "confirmations": {
+            "name": "Confirmations",
+            "data": {
+              "confirm_cancel": "Confirm before canceling"
+            },
+            "data_description": {
+              "confirm_cancel": "Turning this off also narrows matching. Reading a guess back is what makes a loose match safe, so with nothing read back to you only an exact match is acted on."
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "no_name": "Fill in \"Whose reminders are these?\" under Whose Reminders - the list needs a name.",
+      "no_delivery": "Pick at least one Target Satellite or Notification Recipient under \"Send Reminders to:\" - otherwise a reminder has nowhere to go.",
+      "no_name_or_delivery": "Two things are still needed: a name under Whose Reminders, and at least one Target Satellite or Notification Recipient under \"Send Reminders to:\"."
+    }
+  }
+}

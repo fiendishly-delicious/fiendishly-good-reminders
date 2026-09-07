@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Flows · Fiendishly Good Reminders</title>
+<meta name="description" content="What the Fiendishly Good Reminders integration says back, for every action, when you drive it by voice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:#F6F7F9; --card:#FFFFFF; --ink:#11161D; --muted:#5B6674; --faint:#8A94A2;
+    --rule:#DCE1E8; --rule-soft:#E8ECF1;
+    --accent:#0E7C6B; --accent-dim:#E2F0ED;
+    --ask:#2C5AA0;   --ask-dim:#E6EDF7;
+    --warn:#A9501C;  --warn-dim:#F6EBE3;
+    --no:#A3243B;    --no-dim:#F8E7EA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0B1016; --card:#121821; --ink:#E7ECF3; --muted:#9AA6B4; --faint:#6E7A88;
+      --rule:#232D39; --rule-soft:#1B2430;
+      --accent:#47D3B9; --accent-dim:#0F2B27;
+      --ask:#7FAEEA;   --ask-dim:#132235;
+      --warn:#E89663;  --warn-dim:#2A1D14;
+      --no:#F0899C;    --no-dim:#2E141B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0B1016; --card:#121821; --ink:#E7ECF3; --muted:#9AA6B4; --faint:#6E7A88;
+    --rule:#232D39; --rule-soft:#1B2430;
+    --accent:#47D3B9; --accent-dim:#0F2B27;
+    --ask:#7FAEEA;   --ask-dim:#132235;
+    --warn:#E89663;  --warn-dim:#2A1D14;
+    --no:#F0899C;    --no-dim:#2E141B;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:60rem; margin:0 auto; padding:2.5rem 1.5rem 4rem; display:flex; flex-direction:column; gap:2.25rem; }
+
+  .eyebrow { font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.13em;
+             text-transform:uppercase; color:var(--accent); }
+  h1 { font-family:Newsreader,ui-serif,Georgia,serif; font-weight:600; margin:.3rem 0 0;
+       font-size:clamp(1.9rem,4.5vw,2.7rem); line-height:1.1; letter-spacing:-.015em; text-wrap:balance; }
+  .stand { font-family:Newsreader,ui-serif,Georgia,serif; font-size:1.15rem; line-height:1.5;
+           color:var(--muted); max-width:44rem; margin:.6rem 0 0; }
+  h2 { font-family:Newsreader,ui-serif,Georgia,serif; font-weight:600; font-size:1.45rem;
+       margin:0 0 .6rem; letter-spacing:-.01em; }
+  h3 { font-size:.95rem; font-weight:600; margin:0 0 .5rem; }
+  p { margin:0 0 .8rem; max-width:46rem; color:var(--muted); }
+  p strong, li strong { color:var(--ink); font-weight:600; }
+  section { display:flex; flex-direction:column; }
+
+  /* ------------------------------------------------------------------- index */
+  .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:12px; }
+  .toc a { display:flex; flex-direction:column; gap:.3rem; text-decoration:none; padding:14px 16px;
+           border:1px solid var(--rule); border-radius:8px; background:var(--card); color:var(--ink); }
+  .toc a:hover, .toc a:focus-visible { border-color:var(--accent); }
+  .toc .n { font-family:"IBM Plex Mono",monospace; font-size:.7rem; letter-spacing:.1em; color:var(--faint); }
+  .toc .t { font-family:Newsreader,ui-serif,Georgia,serif; font-size:1.2rem; font-weight:600; }
+  .toc .d { font-size:.85rem; color:var(--muted); }
+
+
+  /* ------------------------------------------------------- numbered flows */
+  .out { border-radius:7px; padding:9px 12px; font-size:.88rem; line-height:1.45; }
+  .out.ask  { background:var(--ask-dim);    color:var(--ask); }
+  .out.ok   { background:var(--accent-dim); color:var(--accent); }
+  .out.warn { background:var(--warn-dim);   color:var(--warn); }
+  .out.no   { background:var(--no-dim);     color:var(--no); }
+  ol.flows { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; counter-reset:fl; }
+  ol.flows > li { counter-increment:fl; display:grid; align-items:start; gap:0 14px;
+                  grid-template-columns:1.7rem minmax(0,1fr) 1.6rem minmax(0,1.25fr);
+                  border:1px solid var(--rule-soft); border-radius:9px; background:var(--card);
+                  padding:13px 15px; }
+  ol.flows > li::before { content:counter(fl); font-family:"IBM Plex Mono",monospace; font-size:.8rem;
+                          color:var(--faint); padding-top:.55rem; }
+  .cause b { display:block; font-weight:600; font-size:.95rem; padding-top:.45rem; }
+  .cause i { display:block; font-style:normal; font-size:.8rem; color:var(--muted); margin-top:.15rem; }
+  .toArrow { align-self:center; text-align:center; color:var(--faint); font-size:1.15rem; line-height:1; }
+  .res { display:flex; flex-direction:column; gap:8px; }
+  .fork { display:flex; flex-direction:column; gap:8px; margin-left:14px; padding-left:14px;
+          border-left:1px solid var(--rule); }
+  .br { display:flex; flex-direction:column; gap:4px; }
+  .br .lab { font-family:"IBM Plex Mono",monospace; font-size:.66rem; letter-spacing:.1em;
+             text-transform:uppercase; color:var(--faint); }
+  .resblock { display:flex; flex-direction:column; gap:5px; }
+  .rlab { font-family:"IBM Plex Mono",monospace; font-size:.66rem; letter-spacing:.11em;
+          text-transform:uppercase; color:var(--faint); }
+
+  /* ------------------------------------------------------------------ tables */
+  .tw { overflow-x:auto; border:1px solid var(--rule); border-radius:8px; background:var(--card); }
+  table { border-collapse:collapse; width:100%; font-size:.875rem; }
+  th,td { text-align:left; padding:.6rem .9rem; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  th { font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:.68rem; letter-spacing:.1em;
+       text-transform:uppercase; color:var(--faint); border-bottom-color:var(--rule); }
+  td.you { color:var(--muted); width:42%; }
+  td.said { color:var(--ink); }
+  td code, p code, li code { font-family:"IBM Plex Mono",monospace; font-size:.86em; color:var(--accent); }
+  .num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  .callout { border-left:2px solid var(--accent); background:var(--accent-dim); color:var(--ink);
+             padding:.75rem 1rem; border-radius:0 6px 6px 0; font-size:.9rem; margin:0 0 .8rem; max-width:46rem; }
+  .callout b { font-weight:600; }
+
+  /* --------------------------------------------------------------------- nav */
+  nav.pager { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+              border-top:1px solid var(--rule); padding-top:1.1rem; }
+  nav.pager a { text-decoration:none; color:var(--muted); font-size:.88rem; display:inline-flex;
+                flex-direction:column; gap:.1rem; border:1px solid var(--rule); border-radius:7px;
+                padding:.55rem .85rem; background:var(--card); min-width:11rem; }
+  nav.pager a:hover, nav.pager a:focus-visible { border-color:var(--accent); color:var(--ink); }
+  nav.pager .dir { font-family:"IBM Plex Mono",monospace; font-size:.65rem; letter-spacing:.11em;
+                   text-transform:uppercase; color:var(--faint); }
+  nav.pager .nm { font-family:Newsreader,ui-serif,Georgia,serif; font-size:1.02rem; color:var(--ink); }
+  nav.pager a.next { text-align:right; margin-left:auto; }
+  .crumb { font-size:.82rem; }
+  .crumb a { color:var(--accent); text-decoration:none; }
+  .crumb a:hover { text-decoration:underline; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:14px; font-size:.78rem; color:var(--muted); align-items:center; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .sw { width:11px; height:11px; border-radius:3px; }
+
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  @media (max-width:680px) {
+    ol.flows > li { grid-template-columns:1.7rem minmax(0,1fr); gap:6px 12px; }
+    ol.flows > li .toArrow { grid-column:2; text-align:left; }
+    ol.flows > li .toArrow::after { content:"\2193"; }
+    ol.flows > li .toArrow span { display:none; }
+    ol.flows > li .res { grid-column:2; }
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none!important; animation:none!important; } }
+</style>
+<style>
+  /* the reset the artifact host provides, so both copies render identically */
+  :root { color-scheme: light dark; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const OK='ok', ASK='ask', WARN='warn', NO='no';
+
+const PAGES = [
+  {
+    id:'schedule', n:'Action 1', title:'Scheduling', action:'Schedule', svc:'fiendishly_reminders.schedule',
+    tag:'“Remind me to feed the cat at 5 pm”',
+    blurb:`Four different sentences reach this: a one-off, a repeating one, <em>“remind me again in…”</em>
+      which reuses whatever last fired, and a reminder with no time in it at all. By the time they meet the
+      checks below they are the same three values — text, due, rule — which is why the checks only exist once.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'A task, a time, and — with more than one instance — whose it is',
+       out:['ok',"“Alright, I'll remind John to take the trash out at 7:00 AM on Tuesdays.”"]},
+
+      {cause:'No reminder provided',
+       note:'Nothing in the sentence said what to be reminded about',
+       out:['no','“Beg pardon, I didn’t catch what to remind you about.” — or, if nothing reminder-shaped survived at all, “No comprende, partner.”']},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Who’s this reminder for? John or Jen?”',
+       fork:[['If a name is given','ok',"“Alright, I'll remind Jen to take the trash out at 7:00 AM on Tuesdays.”"],
+             ['If not, after asking three times','no',"“I still don’t know whose that is, so I’ve not set it.”"]]},
+
+      {cause:'No time provided',
+       note:'“Remind me to take the trash out”, and nothing more',
+       ask:'“When should this reminder occur? Default is 8:15 AM.”',
+       fork:[['If a time is given','ok',"“Alright, I'll remind John to take the trash out at 7:00 AM on Tuesdays.”"],
+             ['If not, after asking three times','warn',"“Right, the usual then. I'll remind John to take the trash out at 8:15 AM tomorrow.”"]]},
+
+      {cause:'A time was given but could not be read',
+       note:'“Next Tuesdayish”, or an unparseable string from a script',
+       out:['no','“Beg pardon, I couldn’t work out when.” — or, for a repeating one, “…when to start that one.”']},
+
+      {cause:'The time is in the past',
+       note:'Checked to the second, at the moment of scheduling',
+       out:['no','“That time has already passed.”']},
+
+      {cause:'The recurrence is hourly or below',
+       note:'Anything finer than daily is refused on the way in',
+       out:['no','“Beg pardon, I can’t repeat one that often.”']},
+
+      {cause:'Nothing to repeat',
+       note:'“Remind me again in ten minutes”, with nothing having fired yet',
+       out:['no','“Beg pardon, I don’t have a reminder to repeat.”']},
+    ],
+    says:[
+      {h:'Integration Successful', note:`<b>If a reminder is successfully added, the integration's
+        response will always include the time of the reminder</b> — which is the only moment you find out it
+        heard <em>five</em> as the afternoon, or rolled it to tomorrow.`,
+       rows:[
+        ['Remind me to feed the cat at 5 pm',"Alright, I'll remind you to feed the cat at 5:00 PM tomorrow."],
+        ['Remind me to take the bins out every Sunday at 9 pm for the next 6 weeks',"Alright, I'll remind you to take the bins out every Sunday at 9:00 PM, startin' Sunday, 6 times."],
+        ['Remind me again in twenty minutes',"Alright, I'll remind you about feed the cat at 5:20 PM today."],
+        ['Remind Jen to feed the cat at 5 pm',"Alright, I'll remind Jen to feed the cat at 5:00 PM tomorrow."],
+       ]},
+      {h:'Integration Needs More Information', cols:['Situation','Integration asks'], rows:[
+        ['No time in the sentence','When should this reminder occur? Default is 8:15 AM.'],
+        ['Two lists share the speaker',"Who's this reminder for? John or Jen?"],
+        ['Neither was given','both, whose first'],
+        ['Asked, and misheard','I heard james. Was it John or Jen?'],
+        ['Asked, and silence',"I didn't get that. Was it John or Jen?"],
+        ['Typed, or no speaker to ask on','the question is the reply — nothing is scheduled'],
+       ]},
+      {h:'Integration Unsuccessful', cols:['Why','Integration says'], rows:[
+        ['The task was missing',"Beg pardon, I didn't catch what to remind you about."],
+        ['Nothing reminder-shaped survived','No comprende, partner.'],
+        ['The time made no sense',"Beg pardon, I couldn't work out when."],
+        ["A repeating one's start made no sense","Beg pardon, I couldn't work out when to start that one."],
+        ['The time has gone','That time has already passed.'],
+        ['Finer than daily',"Beg pardon, I can't repeat one that often."],
+        ['Nothing to repeat',"Beg pardon, I don't have a reminder to repeat."],
+       ]},
+    ],
+  },
+
+  {
+    id:'cancel', n:'Action 2', title:'Canceling', action:'Cancel', svc:'fiendishly_reminders.cancel',
+    tag:'“Cancel my dentist reminder”',
+    blurb:`Canceling takes the whole reminder, not the next occurrence — for a repeating one that is
+      <b>every</b> future occurrence. That is why it reads the match back and waits for a yes.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'One reminder matched what you said',
+       ask:'“Are you sure you want me to cancel the reminder to take the trash out?”',
+       fork:[['If you say yes','ok','“Alright, canceled it.”'],
+             ['If you say no, or say nothing','no','“Alright, not canceled.”']]},
+
+      {cause:'The reminder repeats',
+       note:'Canceling takes every occurrence, so the question says so',
+       ask:'“That one repeats. Are you sure you want me to cancel the recurring reminder to take the trash out? That’ll stop every one of ’em, not just the next.”',
+       fork:[['If you say yes','ok','“Alright, canceled it.”'],
+             ['If you say no, or say nothing','no','“Alright, not canceled.”']]},
+
+      {cause:'Several reminders match',
+       note:'All of them go, so all of them are counted back',
+       ask:'“Are you sure you want me to cancel 3 reminders, startin with take the trash out?”',
+       fork:[['If you say yes','ok','“Alright, canceled 3 of them.”'],
+             ['If you say no, or say nothing','no','“Alright, not canceled.”']]},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Whose reminders? John or Jen?”',
+       fork:[['If a name is given','ask','it then reads the match back, as above'],
+             ['If not, after asking three times','no','“I still don’t know whose you mean.”']]},
+
+      {cause:'Confirmation is off, or there is no speaker to ask on',
+       note:'A typed request, a script, or the setting turned off',
+       out:['ok','“Alright, canceled it.” — immediately, with nothing read back first']},
+
+      {cause:'No reminder matched what you said',
+       note:'Canceled by text',
+       out:['no','“Beg pardon, I don’t have a reminder about that.”']},
+
+      {cause:'No reminder at the time you named',
+       note:'Canceled by time — a time that has gone matches nothing on purpose',
+       out:['no','“Beg pardon, I don’t have a reminder at that time.”']},
+
+      {cause:'It was gone by the time you answered',
+       note:'It fired, or something else removed it, while the question was open',
+       out:['no','“Beg pardon, I couldn’t find that one after all.”']},
+    ],
+    says:[
+      {h:'Integration Needs More Information', note:`The scale of the loss is stated
+        before you agree to it.`,
+       cols:['What matched','It asks'],
+       rows:[
+        ['One reminder','Are you sure you want me to cancel the reminder to feed the cat?'],
+        ['A repeating one',"That one repeats. Are you sure you want me to cancel the recurring reminder to feed the cat? That'll stop every one of 'em, not just the next."],
+        ['Several','Are you sure you want me to cancel 3 reminders, startin with feed the cat?'],
+       ]},
+      {h:'Integration Replies With', note:`Silence cancels nothing. Refusing a cancellation loses nothing, so this is the one
+        place where not answering is the safe outcome rather than the awkward one.`,
+       rows:[
+        ['Yes · yeah · yep · do it · go ahead · confirm · cancel it','Alright, canceled it.'],
+        ["No · nope · don't · leave it · never mind · keep it",'Alright, not canceled.'],
+        ['nothing','Alright, not canceled.'],
+       ]},
+      {h:'Integration Unsuccessful', cols:['Why','Integration says'], rows:[
+        ['Nothing matched the text',"Beg pardon, I don't have a reminder about that."],
+        ['Nothing at that time',"Beg pardon, I don't have a reminder at that time."],
+        ['It went between the question and the yes',"Beg pardon, I couldn't find that one after all."],
+       ]},
+    ],
+    extra:`<div class="callout"><b>Turning off “Confirm before canceling” also narrows what will be
+      matched.</b> The tolerant matching that lets “cancel my walk Aussie reminder” find <em>walk Jen</em>
+      is only safe because the guess is named out loud first. With nothing reading it back, only an exact
+      match is acted on — the guess and the question stand or fall together.</div>
+      <div class="callout"><b>The dashboard card always asks</b>, even with that setting off. A tap already
+      names the row exactly, so the question is one tap of insurance rather than a guess being checked.</div>`,
+  },
+
+  {
+    id:'skip', n:'Action 3', title:'Skipping', action:'Skip', svc:'fiendishly_reminders.skip',
+    tag:'“Skip the next vitamins reminder”',
+    blurb:`Skipping drops one occurrence and leaves the series running. It normally does not ask — losing one
+      occurrence of a repeating reminder is small and self-repairing. It asks in exactly one case: when the
+      occurrence being dropped is the <b>last</b> one, because exhausting a rule deletes the reminder. That is
+      a cancellation wearing a skip's clothes.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'A repeating reminder, with more occurrences after this one',
+       out:['ok','“Alright, skippin’ the one at 7:00 AM tomorrow. The rest of ’em stay put.”']},
+
+      {cause:'A whole week was asked for',
+       note:'“Skip the trash this week” — everything up to Saturday',
+       out:['ok','“Alright, skipped 3 of em, through Saturday.”']},
+
+      {cause:'Skipping would end the series',
+       note:'A rule that runs out deletes the reminder, so this one asks',
+       ask:'“That’s the last one of take the trash out, so skippin’ it cancels the whole reminder. Are you sure?”',
+       fork:[['If you say yes','ok','“Alright, skipped it. That was the last of it, so the reminder’s done.”'],
+             ['If you say no, or say nothing','no','“Alright, not canceled.”']]},
+
+      {cause:'The reminder does not repeat',
+       note:'There is no occurrence to drop — skipping it is canceling it',
+       ask:'“Take the trash out only happens the once, so skippin’ it cancels it. Are you sure?”',
+       fork:[['If you say yes','ok','“Alright, canceled it.”'],
+             ['If you say no, or say nothing','no','“Alright, not canceled.”']]},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Whose reminders? John or Jen?”',
+       fork:[['If a name is given','ok','it skips on that list and says what it dropped'],
+             ['If not, after asking three times','no','“I still don’t know whose you mean.”']]},
+
+      {cause:'No reminder matched what you said',
+       note:'By text, by id, or whatever last fired',
+       out:['no','“Beg pardon, I couldn’t find a reminder like that.”']},
+
+      {cause:'Nothing repeating matched what you said',
+       note:'Something matched, but none of it repeats',
+       out:['no','“Beg pardon, I couldn’t find a repeatin’ reminder like that.”']},
+
+      {cause:'Nothing falls inside the window',
+       note:'It repeats, but not again before Saturday',
+       out:['no','“Beg pardon, nothing left to skip in that window.”']},
+
+      {cause:'Nothing has fired yet',
+       note:'“Skip the next one”, with no reminder to reach back to',
+       out:['no','“Beg pardon, I don’t have a reminder to skip.”']},
+    ],
+    says:[
+      {h:'Integration Successful', rows:[
+        ['Skip the next vitamins reminder',"Alright, skippin' the one at 7:30 AM tomorrow. The rest of 'em stay put."],
+        ['Skip vitamins this week',"Alright, skipped 3 of em, through Saturday."],
+        ['Skip the next one','the same, for whatever last fired'],
+        ["Skip Jen's next vitamins reminder","the same, on Jen's list"],
+       ]},
+      {h:'Integration Needs More Information',
+       note:`Answer <b>yes</b> and it says so — “That was the last of it, so the reminder's done.” Answer
+        <b>no</b>, or say nothing, and nothing changes.`,
+       cols:['Situation','It asks'],
+       rows:[
+        ['A one-off',"Vitamins only happens the once, so skippin' it cancels it. Are you sure?"],
+        ['The final occurrence',"That's the last one of vitamins, so skippin' it cancels the whole reminder. Are you sure?"],
+        ['A week that finishes several',"That'd finish off 2 of 'em, startin' with vitamins. Are you sure?"],
+       ]},
+      {h:'Integration Unsuccessful', cols:['Why','Integration says'], rows:[
+        ['Nothing matched',"Beg pardon, I couldn't find a reminder like that."],
+        ['Nothing repeating matched',"Beg pardon, I couldn't find a repeatin' reminder like that."],
+        ['Nothing left to skip this week','Beg pardon, nothing left to skip in that window.'],
+        ['There is no last reminder to reach for',"Beg pardon, I don't have a reminder to skip."],
+       ]},
+    ],
+  },
+
+  {
+    id:'list', n:'Action 4', title:'Listing', action:'List', svc:'fiendishly_reminders.list',
+    tag:'“What are my upcoming reminders”',
+    blurb:`Three questions share this page because they share a path: the whole list, the next one, and how
+      many. None of them change anything, so the only thing that can go wrong is answering about the wrong
+      person's reminders — which is why they ask.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'The whole list, the next one, or how many',
+       out:['ok','“John has 4 reminders: take the trash out every Tuesday at 7:00 AM; …”']},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Whose reminders? John or Jen?”',
+       fork:[['If a name is given','ok','“Jen has 2 reminders: …”'],
+             ['If not, after asking three times','no','“I still don’t know whose you mean.”']]},
+
+      {cause:'More than five reminders',
+       note:'Reciting a dozen at you is worse than saying there are a dozen',
+       out:['ok','“12 reminders, soonest five: …”']},
+
+      {cause:'There are no reminders',
+       note:'None at all, or none inside the window asked about — still an answer',
+       out:['ok','“John ain’t got any reminders set.”']},
+    ],
+    says:[
+      {h:'Integration Successful', note:`As soon as a second list exists — which matters most
+        exactly when the list was chosen for you rather than named by you. A name in the question skips the
+        asking entirely, from any speaker in the house.`,
+       cols:['You ask','It says, with two lists'],
+       rows:[
+        ['What are my upcoming reminders','John has 4 reminders: watch lanterns…; look busy…'],
+        ["What's my next reminder","John's next reminder is watch lanterns every Sunday at 9:00 PM."],
+        ['How many reminders do I have','John currently has 4 reminders.'],
+        ['How many reminders does Jen have','Jen currently has 1 reminder.'],
+       ]},
+      {h:'Integration Successful — nothing to report', cols:['Situation','Integration says'],
+       note:`Having no reminders is an answer, not a failure.`,
+       rows:[
+        ['One list',"You ain't got any reminders set."],
+        ['Two lists',"John ain't got any reminders set."],
+       ]},
+      {h:'Integration Needs More Information', cols:['Situation','Integration asks'], rows:[
+        ['Two lists share the speaker','Whose reminders? John or Jen?'],
+        ['Misheard','I heard james. Was it John or Jen?'],
+        ['Three times, no answer',"I still don't know whose you mean."],
+        ['Typed, or no speaker to ask on',"Whose list do you mean — John or Jen? Say a name and I'll sort it."],
+       ]},
+    ],
+    extra:`<div class="callout"><b>Long lists are cut, and say so.</b> Five are read out; beyond that the
+      answer opens “12 reminders, soonest five: …” rather than reciting the lot at you.</div>`,
+  },
+
+  {
+    id:'find', n:'Action 5', title:'Finding', action:'Find', svc:'fiendishly_reminders.find',
+    tag:'“When is my dentist reminder”',
+    blurb:`Find searches by text, by a named day, or by a period. It returns <b>one entry per reminder however
+      often it repeats</b> — a weekly reminder inside a month-long range is one result, not four — along with
+      the occurrences that fall inside the range you asked about.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'Searched by text, by a named day, or by a period',
+       out:['ok','“1 reminder: dentist at 9:00 AM on Thursday.”']},
+
+      {cause:'A repeating reminder falls inside the range',
+       note:'One row per reminder, told by the occurrence you asked about',
+       out:['ok','“2 reminders next week: bins at 9:00 PM and 3 more; …”']},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Whose reminders? John or Jen?”',
+       fork:[['If a name is given','ok','“Jen has 1 reminder: …”'],
+             ['If not, after asking three times','no','“I still don’t know whose you mean.”']]},
+
+      {cause:'Nothing matched the words',
+       note:'Searched by text. A search that finds nothing has still answered',
+       out:['ok','“You’ve got nothin’ about dentist.”']},
+
+      {cause:'Nothing falls in the day or period',
+       note:'Searched by “next week”, “on Thursday”, “tomorrow”',
+       out:['ok','“You’ve got nothin’ next week.”']},
+
+      {cause:'The date could not be read',
+       note:'Only when a range was given, usually from a script',
+       out:['no','“Beg pardon, I couldn’t work out when.”']},
+    ],
+    says:[
+      {h:'Integration Successful', rows:[
+        ['When is my dentist reminder','1 reminder: dentist at 9:00 AM on Thursday.'],
+        ['Do I have any reminders next week','2 reminders next week: bins at 9:00 PM; dentist at 9:00 AM on Thursday.'],
+        ['What reminders do I have on Thursday','1 reminder on Thursday: dentist at 9:00 AM.'],
+        ["When is Jen's squirrels reminder",'Jen has 1 reminder: check for squirrels every day at 7:30 AM.'],
+       ]},
+      {h:'Integration Successful — nothing found',
+       note:`A search that finds nothing has still answered the question. These are answers, not failures.`,
+       cols:['Situation','Integration says'],
+       rows:[
+        ['Searched by text',"You've got nothin' about dentist."],
+        ['Searched by period',"You've got nothin' next week."],
+        ['Two lists',"John's got nothin' about dentist."],
+       ]},
+      {h:'Integration Needs More Information',
+       cols:['Situation','Integration asks'],
+       rows:[
+        ['Two lists share the speaker','Whose reminders? John or Jen?'],
+        ['Misheard','I heard james. Was it John or Jen?'],
+        ['Silence','I didn’t get that. Was it John or Jen?'],
+       ]},
+      {h:'Integration Unsuccessful',
+       note:`Nothing was searched at all — these are the cases where the question could not be understood
+        or could not be pinned to a list.`,
+       cols:['Why','Integration says'],
+       rows:[
+        ['The date could not be read',"Beg pardon, I couldn't work out when."],
+        ['Whose reminders went unanswered, three times',"I still don't know whose you mean."],
+        ['Typed, or no speaker to ask on',"Whose list do you mean — John or Jen? Say a name and I'll sort it."],
+       ]},
+    ],
+    extra:`<div class="callout"><b>The day is named once, not on every row.</b> A question that already fixes
+      the day — <em>today</em>, <em>tomorrow</em>, <em>on Thursday</em> — gets rows without it; <em>this
+      week</em> keeps it, because there the day is the useful part.</div>
+      <div class="callout"><b>A repeating reminder is told by the occurrence inside your range</b>, not by its
+      next one overall. Ask about October and a weekly reminder answers with an October date and “and 3 more”
+      — answering with its next occurrence overall would name a date nowhere near what you asked about.</div>`,
+  },
+
+  {
+    id:'edit', n:'Action 6', title:'Editing', action:'Edit', svc:'fiendishly_reminders.edit',
+    tag:'“Move my dentist reminder to 4 pm”',
+    blurb:`Editing has two shapes. Say the whole change in one breath and it just happens. Say only which
+      reminder — <em>“edit my dentist reminder”</em> — and it reads the reminder back and asks what it should
+      become, which is the only two-turn exchange the integration has that isn't a yes-or-no.`,
+    flows:[
+      {cause:'All required fields provided',
+       note:'The reminder and the change, said in one breath',
+       out:['ok','“Alright, dentist is now at 4:00 PM.”']},
+
+      {cause:'The reminder repeats and the time changed',
+       note:'A new time re-anchors the pattern, so the reply says so',
+       out:['ok','“Alright, bins is now at 9:00 PM on Thursday. Every one of ’em moves.”']},
+
+      {cause:'No change provided',
+       note:'“Edit my dentist reminder”, and nothing more',
+       ask:'“Dentist is at 9:00 AM on Thursday. What should I change? Say change the reminder to, change the timing to, or replace with.”',
+       fork:[['If a change is given','ok','“Alright, dentist is now at 4:00 PM.”'],
+             ['If not, or nothing usable was said','no','“Beg pardon, I didn’t catch that. Nothin’ changed.”']]},
+
+      {cause:'No user provided',
+       note:'Only if more than one instance, and only on a speaker they share',
+       ask:'“Whose reminders? John or Jen?”',
+       fork:[['If a name is given','ok','it edits on that list and says what changed'],
+             ['If not, after asking three times','no','“I still don’t know whose you mean.”']]},
+
+      {cause:'No reminder identified',
+       note:'Nothing in the sentence said which one',
+       out:['no','“Beg pardon, which reminder?” — or, if nothing matched, “Beg pardon, I don’t have a reminder about that.”']},
+
+      {cause:'Several reminders match',
+       note:'Editing the wrong one is not a recoverable mistake, so it does not guess',
+       out:['no','“You’ve got 3 reminders like that — … You’ll have to be clearer about which one.”']},
+
+      {cause:'The new time could not be read',
+       note:'Or the new pattern could not be worked out',
+       out:['no','“Beg pardon, I couldn’t work out when.” — or “…I couldn’t work out the new pattern.”']},
+
+      {cause:'The new time is in the past',
+       note:'Nothing is changed, and it says so',
+       out:['no','“That time has already passed. Nothin’ changed.”']},
+
+      {cause:'It does not repeat anyway',
+       note:'“Stop repeating my dentist reminder”, on a one-off',
+       out:['no','“Dentist doesn’t repeat anyway.”']},
+
+      {cause:'It was gone by the time you answered',
+       note:'It fired while the two-turn question was open',
+       out:['no','“Beg pardon, that one’s gone now.”']},
+    ],
+    says:[
+      {h:'Integration Successful', rows:[
+        ['Move my dentist reminder to 4 pm','Alright, dentist is now at 4:00 PM.'],
+        ['Move my bins reminder to Thursday',"Alright, bins is now at 9:00 PM on Thursday. Every one of 'em moves."],
+        ['Make my vitamins reminder repeat every Tuesday',"Alright, vitamins now repeats every Tuesday at 7:30 AM, startin' tomorrow."],
+        ['Stop repeating my bins reminder',"Alright, bins won't repeat. It's still set for 9:00 PM on Sunday."],
+        ["Move Jen's dentist reminder to 4 pm","the same, on Jen's list"],
+       ]},
+      {h:'Integration Needs More Information', cols:['Who','What'],
+       rows:[
+        ['You','Edit my lanterns reminder.'],
+        ['Cooter','Watch lanterns is at 9:00 PM — every Sunday, until October 17. What should I change? Say change the reminder to, change the timing to, or replace with.'],
+        ['You','Change the timing to 10 pm Sundays for the next 4 weeks.'],
+        ['Cooter',"Alright, watch lanterns every Sunday at 10:00 PM, startin' Sunday."],
+       ]},
+      {h:'Three keys, and they decide what is touched', cols:['You start with','What changes'],
+       rows:[
+        ['change the timing to …','the schedule only, wording untouched'],
+        ['change the reminder to …','the wording only — <em>rename it to</em> works too'],
+        ['replace with …','both at once'],
+       ]},
+      {h:'Integration Unsuccessful', cols:['Why','Integration says'], rows:[
+        ['No reminder named','Beg pardon, which reminder?'],
+        ['Nothing matched',"Beg pardon, I don't have a reminder about that."],
+        ['Several matched',"You've got 3 reminders like that — … You'll have to be clearer about which one."],
+        ['It went while you were answering',"Beg pardon, that one's gone now."],
+        ['The answer named no change',"Beg pardon, I didn't catch that. Nothin' changed."],
+        ['The new time has gone',"That time has already passed. Nothin' changed."],
+        ["It doesn't repeat anyway",'Dentist doesn’t repeat anyway.'],
+       ]},
+    ],
+    extra:`<div class="callout"><b>Changing the pattern does not move the hour.</b> “Make it repeat every
+      Tuesday” said nothing about the time, so the reminder keeps its own. A spoken hour still wins, and so
+      does a part of the day — “every Tuesday morning” is your morning setting.</div>
+      <div class="callout"><b>Moving a series moves all of it.</b> Setting a new time re-anchors the pattern,
+      which is why the reply says “Every one of 'em moves.” To drop a single occurrence, skip it instead.</div>`,
+  },
+];
+
+const esc = s => String(s).replace(/&(?![a-z]+;|#)/g,'&amp;');
+
+function legend() {
+  return `<div class="legend">
+    <span><i class="sw" style="background:var(--accent-dim);border:1px solid var(--accent)"></i> successful response</span>
+    <span><i class="sw" style="background:var(--ask-dim);border:1px solid var(--ask)"></i> question response</span>
+    <span><i class="sw" style="background:var(--warn-dim);border:1px solid var(--warn)"></i> successful response, default time used</span>
+    <span><i class="sw" style="background:var(--no-dim);border:1px solid var(--no)"></i> unsuccessful response</span>
+  </div>`;
+}
+
+function renderFlows(items) {
+  const box = (k, txt) => `<div class="out ${k}">${esc(txt)}</div>`;
+  const titled = (title, inner) => `<div class="resblock"><span class="rlab">${title}</span>${inner}</div>`;
+  return `<ol class="flows">${items.map(f=>`
+    <li>
+      <div class="cause"><b>${f.cause}</b>${f.note?`<i>${f.note}</i>`:''}</div>
+      <div class="toArrow"><span>&#8594;</span></div>
+      <div class="res">
+        ${f.ask ? titled('Integration Asks', box('ask', f.ask)) : ''}
+        ${f.out ? titled('Integration Replies With', box(f.out[0], f.out[1])) : ''}
+        ${f.fork ? titled('Integration Then Replies With',
+            `<div class="fork">${f.fork.map(([lab,k,txt])=>`
+              <div class="br"><span class="lab">${lab}</span>${box(k,txt)}</div>`).join('')}</div>`) : ''}
+      </div>
+    </li>`).join('')}</ol>`;
+}
+
+function renderIndex() {
+  return `
+  <header>
+    <div class="eyebrow">Fiendishly Good Reminders</div>
+    <h1>Voice Flows</h1>
+    <p class="stand">What the integration says back, for every action, when you drive it by voice. One page
+      each: the path a request takes, the exact words it answers with, and the codes the action returns when
+      a script calls it instead.</p>
+  </header>
+
+  <section>
+    <div class="toc">${PAGES.map(p=>`
+      <a href="#${p.id}"><span class="n">${p.n}</span><span class="t">${p.title}</span>
+        <span class="d">${p.tag}</span></a>`).join('')}
+    </div>
+  </section>
+
+  `;
+}
+
+function renderPage(p, i) {
+  const prev = i > 0 ? PAGES[i-1] : null;
+  const next = i < PAGES.length-1 ? PAGES[i+1] : null;
+  return `
+  <header>
+    <div class="crumb"><a href="#">← Voice Flows</a></div>
+    <div class="eyebrow" style="margin-top:.9rem">${p.n} · <code style="color:inherit">${p.svc}</code></div>
+    <h1>${p.title}</h1>
+    <p class="stand">${p.tag}</p>
+  </header>
+
+  <section><p>${p.blurb}</p></section>
+
+  <section>
+    <h2>${p.action || p.title} Action Voice Flow</h2>
+    <div style="margin:0 0 1.1rem">${legend()}</div>
+    ${renderFlows(p.flows)}
+  </section>
+
+  ${p.says.map(sec=>`
+  <section>
+    <h2>${sec.h}</h2>
+    ${sec.note?`<p>${sec.note}</p>`:''}
+    <div class="tw"><table>
+      <thead><tr><th>${(sec.cols||['You say','Integration says'])[0]}</th><th>${(sec.cols||['You say','Integration says'])[1]}</th></tr></thead>
+      <tbody>${sec.rows.map(([a,b])=>`<tr><td class="you">${esc(a)}</td><td class="said">${esc(b)}</td></tr>`).join('')}</tbody>
+    </table></div>
+  </section>`).join('')}
+
+  ${p.extra?`<section>${p.extra}</section>`:''}
+
+  <nav class="pager">
+    ${prev?`<a href="#${prev.id}"><span class="dir">← Previous</span><span class="nm">${prev.title}</span></a>`
+          :`<a href="#"><span class="dir">← Back</span><span class="nm">Voice Flows</span></a>`}
+    ${next?`<a class="next" href="#${next.id}"><span class="dir">Next →</span><span class="nm">${next.title}</span></a>`
+          :`<a class="next" href="#"><span class="dir">Done →</span><span class="nm">Voice Flows</span></a>`}
+  </nav>`;
+}
+
+function route() {
+  const id = location.hash.replace('#','');
+  const i = PAGES.findIndex(p => p.id === id);
+  document.getElementById('app').innerHTML = i === -1 ? renderIndex() : renderPage(PAGES[i], i);
+  const t = PAGES[i];
+  document.title = t ? `${t.title} · Voice Flows` : 'Voice Flows';
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

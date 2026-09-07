@@ -1,0 +1,209 @@
+# Fiendishly Good Reminders — example voice sentences
+#
+# This file is a STARTING POINT, not the integration's interface. The integration is six
+# actions and two entities; this only teaches Home Assistant which spoken words should
+# reach which one. Copy it to /config/custom_sentences/en/reminders.yaml and restart, or
+# ignore it entirely and write your own — nothing here is required.
+#
+# How it works, in three parts:
+#
+#   intents:  a name, and the sentences that mean it. The NAME is the contract - the
+#             integration registers a handler for each of these, and Home Assistant
+#             matches the name to whoever registered it. Rename one and it stops working.
+#   slots:    fixed values attached to a sentence, for anything the words imply but do
+#             not say. "every Tuesday" needs recur: weekly; the sentence never says it.
+#   lists:    what a {placeholder} may be. `wildcard: true` is free speech; a `values`
+#             list is a closed set, and `out` is what the handler actually receives.
+#
+# Sentence syntax: [square brackets] are optional, (a|b) means either, {braces} are lists.
+#
+# One sentence per action here, which is enough to use all six. The set that ships in the
+# author's own house is nearer 270 sentences - every way of saying a time, every word
+# order - and that is the point: the phrasings are yours to grow, and none of the
+# integration's behavior or wording lives in this file.
+
+language: "en"
+
+intents:
+
+  # ---------------------------------------------------------------- schedule
+  # "Remind me to feed the cat at 5 pm"
+  CustomReminderSet:
+    data:
+      - sentences:
+          - "remind me to {reminder_text} at {hour} {ampm}"
+
+  # "Remind me to take the bins out every Tuesday at 9 pm"
+  # `recur: weekly` is a slot because the sentence implies it without saying it.
+  CustomReminderRecurring:
+    data:
+      - sentences:
+          - "remind me to {reminder_text} every {weekday} at {hour} {ampm}"
+        slots:
+          recur: "weekly"
+      # "Remind me to check the meter on the 13th of every month at 9 am"
+      # A second block under the SAME intent. One intent can have as many shapes as you
+      # like, each with its own slots - here `monthly` instead of `weekly`.
+      - sentences:
+          - "remind me to {reminder_text} on the {monthday} of every month at {hour} {ampm}"
+        slots:
+          recur: "monthly"
+
+  # ------------------------------------------------------------------ cancel
+  # "Cancel my dentist reminder" - takes the whole reminder, every occurrence of it.
+  CustomReminderCancel:
+    data:
+      - sentences:
+          - "cancel [my] [the] {reminder_text} reminder"
+
+  # -------------------------------------------------------------------- skip
+  # "Skip the next vitamins reminder" - drops one occurrence, series carries on.
+  CustomReminderSkip:
+    data:
+      - sentences:
+          - "skip [the] next {reminder_text} reminder"
+        slots:
+          scope: "next"
+
+  # -------------------------------------------------------------------- list
+  # "What are my reminders" - no placeholders at all, so no lists needed.
+  CustomReminderList:
+    data:
+      - sentences:
+          - "(what are|tell me|list) [my] reminders"
+
+  # -------------------------------------------------------------------- find
+  # "When is my dentist reminder"
+  CustomReminderFind:
+    data:
+      - sentences:
+          - "when is [my] [the] {reminder_text} reminder"
+
+  # -------------------------------------------------------------------- edit
+  # "Edit my dentist reminder" - `edit_ask` tells the handler to read the reminder back
+  # and ask what it should become, rather than expecting the change in this sentence.
+  CustomReminderEdit:
+    data:
+      - sentences:
+          - "edit [my] [the] {reminder_text} reminder"
+        slots:
+          edit_ask: "yes"
+
+  # ---------------------------------------------------------------- fallback
+  # Anything reminder-shaped that none of the above matched. Worth keeping whatever else
+  # you change: without it the sentence falls through to the conversation agent, which
+  # answers as though it scheduled something and did not. With it, a reminder that named
+  # no time is asked about instead - "When should this reminder occur?"
+  CustomReminderFallback:
+    data:
+      - sentences:
+          - "remind me {fallback_rest}"
+          - "remind me"
+
+lists:
+
+  # Free speech. Must be declared even so - an undeclared {slot} matches nothing.
+  reminder_text:
+    wildcard: true
+  fallback_rest:
+    wildcard: true
+
+  # A closed set. `out` is what reaches the handler, so several spoken forms can collapse
+  # to one value - and here to a NUMBER, because the handler does date arithmetic with it.
+  weekday:
+    values:
+      - in: "(monday|mondays|on monday)"
+        out: 0
+      - in: "(tuesday|tuesdays|on tuesday)"
+        out: 1
+      - in: "(wednesday|wednesdays|on wednesday)"
+        out: 2
+      - in: "(thursday|thursdays|on thursday)"
+        out: 3
+      - in: "(friday|fridays|on friday)"
+        out: 4
+      - in: "(saturday|saturdays|on saturday)"
+        out: 5
+      - in: "(sunday|sundays|on sunday)"
+        out: 6
+
+  # A range validates the number for you, which is why the timing can be arithmetic
+  # rather than a guess - nothing downstream has to wonder whether "eleventy" is an hour.
+  hour:
+    range:
+      from: 1
+      to: 12
+
+  # 1-31. A range validates the number the same way {hour} does; spoken ordinals arrive
+  # as digits with a suffix, so each one is spelled out here to map "13th" onto 13.
+  monthday:
+    values:
+      - in: "(1st|1)"
+        out: 1
+      - in: "(2nd|2)"
+        out: 2
+      - in: "(3rd|3)"
+        out: 3
+      - in: "(4th|4)"
+        out: 4
+      - in: "(5th|5)"
+        out: 5
+      - in: "(6th|6)"
+        out: 6
+      - in: "(7th|7)"
+        out: 7
+      - in: "(8th|8)"
+        out: 8
+      - in: "(9th|9)"
+        out: 9
+      - in: "(10th|10)"
+        out: 10
+      - in: "(11th|11)"
+        out: 11
+      - in: "(12th|12)"
+        out: 12
+      - in: "(13th|13)"
+        out: 13
+      - in: "(14th|14)"
+        out: 14
+      - in: "(15th|15)"
+        out: 15
+      - in: "(16th|16)"
+        out: 16
+      - in: "(17th|17)"
+        out: 17
+      - in: "(18th|18)"
+        out: 18
+      - in: "(19th|19)"
+        out: 19
+      - in: "(20th|20)"
+        out: 20
+      - in: "(21st|21)"
+        out: 21
+      - in: "(22nd|22)"
+        out: 22
+      - in: "(23rd|23)"
+        out: 23
+      - in: "(24th|24)"
+        out: 24
+      - in: "(25th|25)"
+        out: 25
+      - in: "(26th|26)"
+        out: 26
+      - in: "(27th|27)"
+        out: 27
+      - in: "(28th|28)"
+        out: 28
+      - in: "(29th|29)"
+        out: 29
+      - in: "(30th|30)"
+        out: 30
+      - in: "(31st|31)"
+        out: 31
+
+  ampm:
+    values:
+      - in: "(am|a m|in the morning)"
+        out: "am"
+      - in: "(pm|p m|in the afternoon|in the evening|tonight)"
+        out: "pm"
