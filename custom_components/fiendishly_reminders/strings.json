@@ -15,7 +15,11 @@
             "name": "Send Reminders to:",
             "data": {
               "announce_targets": "Target Satellites",
-              "notify_service": "Notification Recipient(s)"
+              "notify_service": "Notification Recipient(s)",
+              "notify_always": "Also Send to Notification Recipient(s)"
+            },
+            "data_description": {
+              "notify_always": "When off, a reminder that is spoken on a satellite is not sent to the phones as well. When on, both happen - so being in another room no longer means a reminder goes unheard."
             }
           },
           "quiet": {
@@ -79,7 +83,11 @@
             "name": "Send Reminders to:",
             "data": {
               "announce_targets": "Target Satellites",
-              "notify_service": "Notification Recipient(s)"
+              "notify_service": "Notification Recipient(s)",
+              "notify_always": "Also Send to Notification Recipient(s)"
+            },
+            "data_description": {
+              "notify_always": "When off, a reminder that is spoken on a satellite is not sent to the phones as well. When on, both happen - so being in another room no longer means a reminder goes unheard."
             }
           },
           "quiet": {

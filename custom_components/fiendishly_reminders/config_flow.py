@@ -32,6 +32,7 @@ from .const import (
     CONF_DEFAULT_TIME,
     CONF_EVENING_TIME,
     CONF_MORNING_TIME,
+    CONF_NOTIFY_ALWAYS,
     CONF_NOTIFY_SERVICE,
     CONF_PRESENCE_ENTITY,
     CONF_QUIET_END,
@@ -43,6 +44,7 @@ from .const import (
     DEFAULT_AFTERNOON_TIME,
     DEFAULT_EVENING_TIME,
     DEFAULT_MORNING_TIME,
+    DEFAULT_NOTIFY_ALWAYS,
     DEFAULT_TIME,
     DOMAIN,
 )
@@ -52,7 +54,7 @@ from .const import (
 # sections only group the UI - so this table is also what flattens a submission back out.
 SECTIONS: dict[str, tuple[str, ...]] = {
     "whose": (CONF_NAME,),
-    "delivery": (CONF_ANNOUNCE_TARGETS, CONF_NOTIFY_SERVICE),
+    "delivery": (CONF_ANNOUNCE_TARGETS, CONF_NOTIFY_SERVICE, CONF_NOTIFY_ALWAYS),
     "quiet": (CONF_PRESENCE_ENTITY, CONF_QUIET_START, CONF_QUIET_END),
     "chime": (CONF_CHIME_ON, CONF_CHIME),
     "times": (CONF_DEFAULT_TIME, CONF_MORNING_TIME, CONF_AFTERNOON_TIME, CONF_EVENING_TIME),
@@ -87,6 +89,13 @@ def _fields(defaults: dict, chimes: list) -> dict[str, dict]:
             ): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="notify", multiple=True)
             ),
+            # Announce and notify are alternatives unless this is on: the spoken one
+            # used to return early and the phone was only a fallback. Off by default so
+            # nothing changes for an entry configured before the option existed.
+            vol.Optional(
+                CONF_NOTIFY_ALWAYS,
+                default=defaults.get(CONF_NOTIFY_ALWAYS, DEFAULT_NOTIFY_ALWAYS),
+            ): selector.BooleanSelector(),
         },
         "quiet": {
             # suggested_value, NOT default: these are the clearable ones, and a default

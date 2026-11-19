@@ -47,6 +47,9 @@ RESULT_EMPTY = 40          # list found no reminders
 CONF_NAME = "name"
 CONF_ANNOUNCE_TARGETS = "announce_targets"
 CONF_NOTIFY_SERVICE = "notify_service"
+# Off unless asked for: a spoken reminder used to end delivery, and an entry that has
+# never seen this setting must keep behaving that way.
+CONF_NOTIFY_ALWAYS = "notify_always"
 CONF_PRESENCE_ENTITY = "presence_entity"
 CONF_QUIET_START = "quiet_start"
 CONF_QUIET_END = "quiet_end"
@@ -84,6 +87,7 @@ CHIME_CHOICES = [CHIME_FG, CHIME_HA, CHIME_NONE, CHIME_CUSTOM]
 
 DEFAULT_CHIME = CHIME_FG
 DEFAULT_CHIME_ON = True
+DEFAULT_NOTIFY_ALWAYS = False
 DEFAULT_CONFIRM_CANCEL = True
 DEFAULT_QUIET_START = "22:00:00"
 DEFAULT_QUIET_END = "08:00:00"
