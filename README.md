@@ -56,6 +56,7 @@ In contrast to the above, this integration owns its own schedule, so neither com
 | **Cancel** | By text, by time, or by id — and it **reads the match back and waits for a yes** |
 | **Presence & quiet-hours routing** | Speaks in the room when you are home and awake, pushes to your phone otherwise |
 | **Degrading delivery** | Satellites → notify service → persistent notification. Never throws |
+| **Both on request** | Turn on *Also Send to Notification Recipient(s)* and a spoken reminder is pushed to the phones as well |
 | **Says whose it is** | With two lists, a reminder arrives as *"Reminder for John: take the trash out"* |
 | **Turned round to face you** | You say *"remind me to take my pills"*; it says *"take **your** pills"* |
 | **Entities** | A to-do list and a timestamp sensor carrying the whole list in attributes |
@@ -129,6 +130,7 @@ a half-set-up list.
 | **Whose Reminders** | Whose reminders are these? | **Yes** | The list's name. It titles the entry — *John* gives *John's Reminders* — and it is how a spoken reminder finds the right list when there is more than one | *(none)* |
 | **Send Reminders to:** | Target Satellites | **One of these two** | `assist_satellite` entities that speak reminders. Also the only satellites a spoken question is ever asked on | *(none)* |
 | | Notification Recipient(s) | **One of these two** | Where a reminder goes when it cannot or should not be spoken aloud. Pick as many as you like | *(none)* |
+| | Also Send to Notification Recipient(s) | No | Push a reminder to the recipients **as well as** speaking it, instead of only when it could not be spoken | `No` |
 | **Prevent Spoken Reminders If:** | This person is not home | No | A `person` entity. While it is not `home`, reminders go to the notification recipients instead of being spoken | *(none)* |
 | | Quiet Hours Start | No | Beginning of the do-not-disturb window. **Clear it with the X to switch quiet hours off** | *(none)* |
 | | Quiet Hours End | No | End of it. The window wraps midnight | *(none)* |
@@ -142,19 +144,20 @@ a half-set-up list.
 
 The four times are marked required only so that Home Assistant does not draw a clear button
 beside them: they arrive filled in, and there is no such thing as "no morning". The two
-delivery fields are the opposite — neither is required on its own, and the pair is checked by
+delivery targets are the opposite — neither is required on its own, and the pair is checked by
 hand, because "one or the other" is a condition across two fields rather than a property of
 either.
 
 Submitting with the name blank, or with no delivery target, comes back naming what is missing
 and holding everything else you had already filled in.
 
-**Give at least one delivery channel** — satellites, a notify service, or both. Either will do; what a setup cannot be is deaf and mute at once, because a reminder that fires exactly on time and has nowhere to go has achieved nothing. Every other field can only *remove* behavior by being absent:
+**Give at least one delivery channel** — satellites, a notify service, or both. Either will do; what a setup cannot be is deaf and mute at once, because a reminder that fires exactly on time and has nowhere to go has achieved nothing. Every other field can only *remove* behavior by being absent — with one exception, the toggle that adds the phone as a *second* channel rather than the fallback:
 
 - **No presence entity** → reminders are always considered speakable, so the satellites always get them.
 - **No quiet hours** → there are no quiet hours. Clearing a field with its **X** is how you turn them off, and setting only one of the two is the same as setting neither.
 - **Play Chime Before Reminder off** → the announcement plays with no sound in front of it at all. Silence is asked for explicitly rather than left unset, because `assist_satellite` plays its *own* sound when preannounce is not specified — which is what the **Home Assistant's own chime** option gives you instead.
 - **No notification recipients** (satellites only) → there is no phone fallback. When a reminder should not be spoken — because you are not home, or it falls inside quiet hours — it is raised as a persistent notification instead, so it is still waiting for you rather than silently dropped.
+- **Also Send to Notification Recipient(s) on** → a reminder that *was* spoken is pushed to the recipients as well, rather than instead of. Off, the two are alternatives: the satellites say it and the phones are skipped, and a phone only rings for a reminder that could not be spoken. On, both happen — which is the setting you want if you are often in a room the satellites do not cover, because being out of earshot no longer means the reminder goes unheard. It changes nothing about a reminder that could not be spoken: that still goes to the recipients, and to a persistent notification only when there are none.
 - **No satellites** (recipients only) → everything goes to the notification recipients, and nothing is ever spoken aloud. Presence and quiet hours then make no difference to where a reminder lands, and the spoken confirmations described below do not apply: canceling happens immediately and says so, and `edit my … reminder` asks you to say the change in one sentence instead.
 - **Confirm before canceling off** → a cancellation happens the moment you ask for it. It also **narrows what will be matched**: the tolerant matching that lets "cancel my dennist reminder" find *dentist* is only safe because the guess is named out loud before anything happens to it, so with nothing reading it back only an exact match is acted on. The guess and the question stand or fall together.
 - **A time left at its default** → 08:15 for the plain one, and each part of the day keeps the hour it shipped with. The four cannot be blanked from the form; they are pre-filled and required.
