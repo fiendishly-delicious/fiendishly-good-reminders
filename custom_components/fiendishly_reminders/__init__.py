@@ -61,12 +61,14 @@ from .const import (
     CONF_CHIME,
     CONF_CHIME_ON,
     CONF_NAME,
+    CONF_NOTIFY_ALWAYS,
     CONF_NOTIFY_SERVICE,
     CONF_PRESENCE_ENTITY,
     CONF_QUIET_END,
     CONF_QUIET_START,
     DEFAULT_CHIME,
     DEFAULT_CHIME_ON,
+    DEFAULT_NOTIFY_ALWAYS,
     DOMAIN,
     PLATFORMS,
     STARTUP_GRACE,
@@ -300,7 +302,12 @@ class ReminderManager:
         return True, CHIME_URL
 
     async def deliver(self, text: str) -> None:
-        """Speak it, or push it to a phone.
+        """Speak it, push it to a phone, or both.
+
+        By default they are alternatives - the first that applies wins, and the phone is
+        a fallback for a reminder that could not be spoken. With notify_always on, a
+        reminder that IS spoken is pushed as well, so being in another room stops a
+        reminder going unheard.
 
         Degrades rather than failing: with no satellites it notifies, with no notify
         service it announces, and with neither it falls back to a persistent
@@ -316,6 +323,7 @@ class ReminderManager:
         # differently.
         header = f"Reminder for {self.name}" if len(all_managers(self.hass)) > 1 else "Reminder"
 
+        spoke = False
         if targets and self._audible():
             data = {"message": f"{header}: {text}"}
             if play:
@@ -331,6 +339,10 @@ class ReminderManager:
             await self.hass.services.async_call(
                 "assist_satellite", "announce", {"entity_id": targets, **data}, blocking=True
             )
+            spoke = True
+
+        # Spoken and nothing else wanted: delivery is done, exactly as it used to be.
+        if spoke and not self._opt(CONF_NOTIFY_ALWAYS, DEFAULT_NOTIFY_ALWAYS):
             return
 
         entities, legacy = self._notify_targets(notify_service)
@@ -349,6 +361,10 @@ class ReminderManager:
                 domain, name, {"title": header, "message": text}, blocking=True
             )
         if entities or legacy:
+            return
+
+        # Something was delivered - do not add a persistent notification on top of it.
+        if spoke:
             return
 
         await self.hass.services.async_call(

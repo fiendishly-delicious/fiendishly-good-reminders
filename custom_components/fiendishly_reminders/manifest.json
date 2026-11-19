@@ -1,7 +1,7 @@
 {
   "domain": "fiendishly_reminders",
   "name": "Fiendishly Good Reminders",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "config_flow": true,
   "documentation": "https://github.com/fiendishly-delicious/fiendishly-good-reminders",
   "issue_tracker": "https://github.com/fiendishly-delicious/fiendishly-good-reminders/issues",
